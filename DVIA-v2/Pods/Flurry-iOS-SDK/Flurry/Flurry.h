@@ -2,13 +2,13 @@
 //  Flurry.h
 //  Flurry iOS Analytics Agent
 //
-//  Copyright 2016 Flurry, Inc. All rights reserved.
+//  Copyright (c) 2021 Yahoo. All rights reserved.
 //
 //	Methods in this header file are for use with Flurry Analytics
 
 #import <UIKit/UIKit.h>
 #if !TARGET_OS_WATCH
-#import <StoreKit/StoreKit.h>
+@class SKPaymentTransaction;
 #endif
 #if TARGET_OS_TV
 @class JSContext;
@@ -16,15 +16,28 @@
 
 #import "FlurrySessionBuilder.h"
 
-typedef enum {
+/*!
+ *  @brief Enum for payment transaction state
+ */
+typedef NS_ENUM(NSUInteger, FlurryPaymentTransactionState) {
+    FlurryPaymentTransactionStatePurchasing = 0,
+    FlurryPaymentTransactionStateSuccess = 1,
+    FlurryPaymentTransactionStateFailure = 2,
+    FlurryPaymentTransactionStateRestored = 3,
+    FlurryPaymentTransactionStateDeferred = 4
+};
+
+
+typedef NS_ENUM(NSUInteger, FlurryEventRecordStatus) {
     FlurryEventFailed = 0,
     FlurryEventRecorded,
     FlurryEventUniqueCountExceeded,
     FlurryEventParamsCountExceeded,
     FlurryEventLogCountExceeded,
     FlurryEventLoggingDelayed,
-    FlurryEventAnalyticsDisabled
-} FlurryEventRecordStatus;
+    FlurryEventAnalyticsDisabled,
+    FlurryEventParametersMismatched
+};
 
 
 /*!
@@ -33,27 +46,26 @@ typedef enum {
  *
  */
 
-typedef enum {
+typedef NS_ENUM(NSUInteger, FlurrySyndicationEvent){
     FlurrySyndicationReblog      = 0,
     FlurrySyndicationFastReblog  = 1,
     FlurrySyndicationSourceClick = 2,
     FlurrySyndicationLike        = 3,
     FlurrySyndicationShareClick  = 4,
     FlurrySyndicationPostSend    = 5
-    
-}FlurrySyndicationEvent;
+};
 
 extern NSString* _Nonnull const kSyndicationiOSDeepLink;
 extern NSString* _Nonnull const kSyndicationAndroidDeepLink;
 extern NSString* _Nonnull const kSyndicationWebDeepLink;
 
 
-typedef enum {
+typedef NS_ENUM(NSUInteger, FlurryTransactionRecordStatus) {
     FlurryTransactionRecordFailed = 0,
     FlurryTransactionRecorded,
     FlurryTransactionRecordExceeded,
     FlurryTransactionRecodingDisabled
-} FlurryTransactionRecordStatus;
+};
 
 #if !TARGET_OS_WATCH
 
@@ -87,6 +99,25 @@ typedef enum {
 - (void)flurrySessionDidCreateWithInfo:(nonnull NSDictionary*)info;
 
 @end
+
+#if TARGET_OS_IOS
+/*!
+ *  @brief Provides delegate method for receiving callbacks related to publisher data is fetched.
+ */
+@protocol FlurryFetchObserver <NSObject>
+
+@optional
+
+/*!
+ *  @brief Invoked when publisher data is fetched
+ *  @since 11.3.0
+ *
+ *  @param publisherData A dictionary of key-value paired configuration for publisher segmentation data, nil if data not fetched or not changed.
+ */
+- (void)onFetched:(NSDictionary<NSString *, NSString *> *_Nullable)publisherData;
+
+@end
+#endif
 
 /*!
  *  @brief Provides all available methods for defining and reporting Analytics from use
@@ -810,10 +841,12 @@ typedef enum {
 + (void) logPaymentTransaction:(nonnull SKPaymentTransaction *)transaction
                 statusCallback:(nullable void(^)(FlurryTransactionRecordStatus))statusCallback;
 
+
 /*!
  *  @brief Records Apple store IAP transaction params and user defined transaction params manually.
  *  @since 10.0.0
  *
+ *  @deprecated since 11.0.0.
  *  @param transactionId a string Id for this IAP transaction
  *  @param productId a string Id for this IAP transaction product
  *  @param quantity a string representation of quantity of items purchased
@@ -834,8 +867,60 @@ typedef enum {
                                           productName:(nonnull NSString *)productName
                                      transactionState:(nonnull NSString *)transactionState
                                     userDefinedParams:(nullable NSDictionary*)transactionParams
-                                       statusCallback:(nullable void(^)(FlurryTransactionRecordStatus))statusCallback;
+                                       statusCallback:(nullable void(^)(FlurryTransactionRecordStatus))statusCallback __attribute__((deprecated("use +logFlurryPaymentTransactionParamsWithTransactionId:productId:quantity:price:currency:productName:transactionState:userDefinedParams:statusCallback:")));
 
+/*!
+ *  @brief Records Apple store IAP transaction params and user defined transaction params manually.
+ *  @since 11.0.0
+ *
+ *  @deprecated since 12.0.0
+ *  @param transactionId a string Id for this IAP transaction
+ *  @param productId a string Id for this IAP transaction product
+ *  @param quantity an integer representation of quantity of items purchased
+ *  @param price a float representation of price of the item
+ *  @param currency a string representation of currency of the transaction
+ *  @param productName a string representation of product name
+ *  @param transactionState an enum to convert transaction state to integer: 0:Purchasing, 1:Success, 2:Failure, 3:Restored, 4:Deferred
+ *  @param transactionParams a dictionary of user defined transaction params to record
+ *  @param statusCallback a callback gettign called when the status of ID that is associated with the event
+ *
+ */
+
++ (void) logFlurryPaymentTransactionParamsWithTransactionId:(nonnull NSString *)transactionId
+                                                  productId:(nonnull NSString *)productId
+                                                   quantity:(nonnull NSUInteger*)quantity
+                                                      price:(nonnull NSDecimalNumber*)price
+                                                   currency:(nonnull NSString *)currency
+                                                productName:(nonnull NSString *)productName
+                                           transactionState:(FlurryPaymentTransactionState)transactionState
+                                          userDefinedParams:(nullable NSDictionary *)transactionParams
+                                             statusCallback:(nullable void(^)(FlurryTransactionRecordStatus))statusCallback __attribute__((deprecated("use +logPaymentTransactionWithTransactionId:productId:quantity:price:currency:productName:transactionState:userDefinedParams:statusCallback:")));
+
+/*!
+ *  @brief Records Apple store IAP transaction params and user defined transaction params manually.
+ *  @since 11.4.0
+ *
+ *  @param transactionId a string Id for this IAP transaction
+ *  @param productId a string Id for this IAP transaction product
+ *  @param quantity an integer representation of quantity of items purchased
+ *  @param price a float representation of price of the item
+ *  @param currency a string representation of currency of the transaction
+ *  @param productName a string representation of product name
+ *  @param transactionState an enum to convert transaction state to integer: 0:Purchasing, 1:Success, 2:Failure, 3:Restored, 4:Deferred
+ *  @param transactionParams a dictionary of user defined transaction params to record
+ *  @param statusCallback a callback gettign called when the status of ID that is associated with the event
+ *
+ */
+
++ (void) logPaymentTransactionWithTransactionId:(nonnull NSString *)transactionId
+                                                  productId:(nonnull NSString *)productId
+                                                   quantity:(NSUInteger)quantity
+                                                      price:(double)price
+                                                   currency:(nonnull NSString *)currency
+                                                productName:(nonnull NSString *)productName
+                                           transactionState:(FlurryPaymentTransactionState)transactionState
+                                          userDefinedParams:(nullable NSDictionary *)transactionParams
+                                             statusCallback:(nullable void(^)(FlurryTransactionRecordStatus))statusCallback;
 
 #pragma mark - Timed Event Logging
 
@@ -1054,10 +1139,10 @@ typedef enum {
  *  @see #logError:message:exception: for details on capturing exceptions.
  *
  *  @code
- *  - (void) webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error
- {
- [Flurry logError:@"WebView No Load" message:[error localizedDescription] error:error];
- }
+ *  - (void)webView:(WKWebView *)webView didFailNavigation:(WKNavigation *)navigation withError:(NSError *)error;
+ * {
+    [Flurry logError:@"WebView No Load" message:[error localizedDescription] error:error];
+    }
  *  @endcode
  *
  *  @param errorID Name of the error.
@@ -1076,7 +1161,7 @@ typedef enum {
  *  @see #logError:message:exception:withParameters: for details on capturing exceptions.
  *
  *  @code
- *  - (void) webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error
+ *  - (void)webView:(WKWebView *)webView didFailNavigation:(WKNavigation *)navigation withError:(NSError *)error;
  {
  [Flurry logError:@"WebView No Load" message:[error localizedDescription] error:error];
  }
@@ -1100,7 +1185,7 @@ typedef enum {
  *  Breadcrumbs are reset at every application launch.
  *
  *  @code
- *  - (void) webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error
+ *  - (void)webView:(WKWebView *)webView didFailNavigation:(WKNavigation *)navigation withError:(NSError *)error;
  {
  [Flurry leaveBreadcrumb:@"WebView not loading"];
  }
@@ -1111,89 +1196,6 @@ typedef enum {
  */
 + (void)leaveBreadcrumb:(nonnull NSString*)breadcrumb;
 //@}
-
-#pragma mark - Page view methods
-
-#if !TARGET_OS_TV
-/** @name Page View Methods
- *  Count page views. 
- */
-//@{
-
-/*!
- *  @brief Automatically track page views on a @c UINavigationController or @c UITabBarController.
- *  @since 4.3
- *
- *  @deprecated since 10.0.0.
- *  This method will be removed in a future version of the SDK.
- *
- *  This method increments the page view count for a session based on traversing a UINavigationController
- *  or UITabBarController. The page view count is only a counter for the number of transitions in your
- *  app. It does not associate a name with the page count. To associate a name with a count of occurences
- *  see #logEvent:.
- * 
- *  @note If you need to release passed target, you should call counterpart method + (void)stopLogPageViewsForTarget:(id)target before;
- *
- *  @see #logPageView for details on explictly incrementing page view count.
- *
- *  @code
- *  -(void) trackViewsFromTabBar:(UITabBarController*) tabBar
-    {
-        [Flurry logAllPageViewsForTarget:tabBar];
-    }
- *  @endcode
- * 
- *  @param target The navigation or tab bar controller.
- */
-+ (void)logAllPageViewsForTarget:(nullable id)target __attribute__ ((deprecated));
-
-/*!
- *  @brief Stops logging page views on previously observed with logAllPageViewsForTarget: @c UINavigationController or @c UITabBarController.
- *  @since 4.3
- *
- *  @deprecated since 10.0.0.
- *  This method will be removed in a future version of the SDK.
- * 
- *  Call this method before instance of @c UINavigationController or @c UITabBarController observed with logAllPageViewsForTarget: is released.
- *
- *  @code
- * -(void) dealloc
-    {
-        [Flurry stopLogPageViewsForTarget:_tabBarController];
-        [_tabBarController release];
-        [super dealloc];
-    }
- *  @endcode
- * 
- *  @param target The navigation or tab bar controller.
- */
-+ (void)stopLogPageViewsForTarget:(nullable id)target __attribute__ ((deprecated));
-
-/*!
- *  @brief Explicitly track a page view during a session.
- *  @since 2.7
- *
- *  @deprecated since 10.0.0.
- *  This method will be removed in a future version of the SDK.
- * 
- *  This method increments the page view count for a session when invoked. It does not associate a name
- *  with the page count. To associate a name with a count of occurences see #logEvent:.
- *
- *  @see #logAllPageViews for details on automatically incrementing page view count based on user
- *  traversing navigation or tab bar controller.
- *
- *  @code
- *  -(void) trackView 
-    {
-        [Flurry logPageView];
-    }
- *  @endcode
- *
- */
-+ (void)logPageView __attribute__ ((deprecated));
-
-//@}
-#endif
 
 #pragma mark - TVML JSContext
 
@@ -1274,6 +1276,86 @@ typedef enum {
  *
  */
 + (void)openPrivacyDashboard:(nullable void(^)(BOOL success))completionHandler;
+
+#if TARGET_OS_IOS
+#pragma mark - Publisher Segmentation
+
+/*!
+ *  @brief indicate whether the publisher data is fetched and ready to use
+ *  @since 11.3.0
+ *  @return YES if the publisher segmentation data is fetched and ready to use
+ */
++ (BOOL)isFetchFinished;
+
+/*!
+ *  @brief register as an observer with given execution queue
+ *  @since 11.3.0
+ *  @param observer an observing object
+ *  @param queue the execution queue on which the observer callbacks will be executed
+ */
++ (void)registerFetchObserver:(id<FlurryFetchObserver> _Nonnull)observer withExecutionQueue:(dispatch_queue_t _Nonnull)queue;
+
+/*!
+ *  @brief unregister as an observer
+ *  @Since 11.3.0
+ *  @param observer an observing object
+ */
++ (void)unregisterFetchObserver:(id<FlurryFetchObserver> _Nonnull)observer;
+
+/*!
+ *  @brief Retrive the fetched publisher data
+ *  @Since 11.3.0
+ *  @return the key-value paired configuration for publisher segmentation data. If not yet fetched,
+ *  will return the cached segments data.
+ */
++ (nullable NSDictionary<NSString *, NSString *> *)getPublisherData;
+
+/*!
+ *  @brief Fetch the publisher data
+ *  @Since 11.3.0
+ *  Fetch will trigger an async call to the server.  Server has a throttle
+ *  where when the user calls fetch Config many times in a row, it will
+ *  basically do a no-op.
+ */
++ (void)fetch;
+
+#endif
+
+/*!
+ *  @brief Explicitly specifies the App Version that Flurry will use to group Analytics data.
+ *  @since 11.4.0
+ *
+ *  This is a method that overrides the App Version Flurry uses for reporting. Flurry will
+ *  use the CFBundleVersion in your info.plist file when this method is not invoked.
+ *
+ *  @note There is a maximum of 605 versions allowed for a single app.
+ *
+ *  @param version The custom version name.
+ */
++ (void)setAppVersion:(nonnull NSString *)version;
+
+/*!
+ *  @brief Set the timeout for expiring a Flurry session.
+ *  @since 11.4.0
+ *
+ *  This is a method that sets the time the app may be in the background before
+ *  starting a new session upon resume.  The default value for the session timeout is 10
+ *  seconds in the background.
+ *
+ *  @param seconds The time in seconds to set the session timeout to.
+ */
+
++ (void)setSessionContinueSeconds:(int)seconds;
+
+/*!
+ *  @brief Enables opting out of background sessions being counted towards total sessions.
+ *  @since 11.4.0
+ *
+ *  @param value @c NO to opt out of counting background sessions towards total sessions.
+ *  The default value for the session is @c YES
+ */
+
++ (void)setCountBackgroundSessions:(BOOL)value;
 
 @end
 

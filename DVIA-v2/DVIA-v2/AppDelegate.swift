@@ -18,29 +18,46 @@ import Flurry_iOS_SDK
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-        let navigationBarAppearace = UINavigationBar.appearance()
-        navigationBarAppearace.tintColor = UIColor.white
-        navigationBarAppearace.barTintColor = UIColor(red: 0.9, green: 0.13, blue: 0.28, alpha: 1.0)
-        let textAttributes = [NSAttributedStringKey.foregroundColor:UIColor.white , NSAttributedStringKey.font: UIFont(name: "Helvetica-Bold", size: 20)!]
-        navigationBarAppearace.titleTextAttributes = textAttributes
-        
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        let textAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white,
+                              NSAttributedString.Key.font: UIFont(name: "Helvetica-Bold", size: 20)!]
+        let barTintColor = UIColor(red: 0.9, green: 0.13, blue: 0.28, alpha: 1.0)
+
+        let navigationBarAppearance = UINavigationBar.appearance()
+        navigationBarAppearance.tintColor = UIColor.white
+        navigationBarAppearance.barTintColor = barTintColor
+        navigationBarAppearance.isTranslucent = false
+
+        if #available(iOS 13.0, *) {
+            let appearance = UINavigationBarAppearance()
+            appearance.titleTextAttributes = textAttributes
+            appearance.backgroundColor = barTintColor
+            navigationBarAppearance.standardAppearance = appearance
+            navigationBarAppearance.compactAppearance = appearance
+            navigationBarAppearance.scrollEdgeAppearance = appearance
+            if #available(iOS 15.0, *) {
+                navigationBarAppearance.compactScrollEdgeAppearance = appearance
+            }
+        } else {
+            navigationBarAppearance.titleTextAttributes = textAttributes
+        }
+
         //Flurry Analytics code for Thirty Party Data Leakage section
         Flurry.startSession("8RM5WHP628853HQXFKDX", with: FlurrySessionBuilder
             .init()
             .withCrashReporting(true)
-            .withLogLevel(FlurryLogLevelAll))
+            .withLogLevel(FlurryLogLevel.all))
         
         return true
     }
 
-    func application(_ app: UIApplication, open url: URL, options: [UIApplicationOpenURLOptionsKey : Any] = [:]) -> Bool {
+    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
     
         let splitUrl = url.absoluteString.components(separatedBy: "/phone/call_number/")
         if ((Int(splitUrl[1])) != nil){
             //Valid URL, since the argument is a number
             let alertController = UIAlertController(title: "Success!", message: "Calling \(splitUrl[1]). Ring Ring !!!", preferredStyle: .alert)
-            let okAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil)
+            let okAction = UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: nil)
             alertController.addAction(okAction)
             window?.rootViewController?.present(alertController, animated: true, completion: nil)
         }

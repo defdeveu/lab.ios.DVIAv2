@@ -11,8 +11,12 @@
 #endif
 
 #import "Flurry.h"
+#import "Flurry+Event.h"
 #import "FlurrySessionBuilder.h"
 #import "FlurryConsent.h"
+#import "FlurryUserProperties.h"
+#import "FlurryCCPA.h"
+#import "FlurrySKAdNetwork.h"
 
 FOUNDATION_EXPORT double Flurry_iOS_SDKVersionNumber;
 FOUNDATION_EXPORT const unsigned char Flurry_iOS_SDKVersionString[];

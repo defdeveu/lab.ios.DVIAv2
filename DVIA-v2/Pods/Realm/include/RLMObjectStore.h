@@ -34,6 +34,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 void RLMVerifyHasPrimaryKey(Class cls);
 
+void RLMVerifyInWriteTransaction(RLMRealm *const realm);
+
 //
 // Accessor Creation
 //
@@ -72,22 +74,29 @@ NS_RETURNS_RETAINED;
 //
 
 
-// switch List<> properties from being backed by unmanaged RLMArrays to RLMManagedArray
-void RLMInitializeSwiftAccessorGenerics(RLMObjectBase *object);
+// Perform the per-property accessor initialization for a managed RealmSwiftObject
+// promotingExisting should be true if the object was previously used as an
+// unmanaged object, and false if it is a newly created object.
+void RLMInitializeSwiftAccessor(RLMObjectBase *object, bool promotingExisting);
 
 #ifdef __cplusplus
 }
 
 namespace realm {
     class Table;
-    template<typename T> class BasicRowExpr;
-    using RowExpr = BasicRowExpr<Table>;
+    class Obj;
+    struct ObjLink;
 }
 class RLMClassInfo;
 
+// get an object with a given table & object key
+RLMObjectBase *RLMObjectFromObjLink(RLMRealm *realm,
+                                    realm::ObjLink&& objLink,
+                                    bool parentIsSwiftObject) NS_RETURNS_RETAINED;
+
 // Create accessors
-RLMObjectBase *RLMCreateObjectAccessor(RLMClassInfo& info, NSUInteger index) NS_RETURNS_RETAINED;
-RLMObjectBase *RLMCreateObjectAccessor(RLMClassInfo& info, realm::RowExpr row) NS_RETURNS_RETAINED;
+RLMObjectBase *RLMCreateObjectAccessor(RLMClassInfo& info, int64_t key) NS_RETURNS_RETAINED;
+RLMObjectBase *RLMCreateObjectAccessor(RLMClassInfo& info, realm::Obj&& obj) NS_RETURNS_RETAINED;
 #endif
 
 NS_ASSUME_NONNULL_END

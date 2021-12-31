@@ -28,9 +28,72 @@ typedef RLM_CLOSED_ENUM(int32_t, RLMPropertyType);
 
 /**
  A homogenous collection of Realm-managed objects. Examples of conforming types
- include `RLMArray`, `RLMResults`, and `RLMLinkingObjects`.
+ include `RLMArray`, `RLMSet`, `RLMResults`, and `RLMLinkingObjects`.
  */
 @protocol RLMCollection <NSFastEnumeration, RLMThreadConfined>
+
+@optional
+
+/**
+ Returns the first object in the collection.
+
+ Returns `nil` if called on an empty collection.
+
+ @return An object of the type contained in the collection.
+ */
+- (nullable id)firstObject;
+
+/**
+ Returns the last object in the collection.
+
+ Returns `nil` if called on an empty collection.
+
+ @return An object of the type contained in the collection.
+ */
+- (nullable id)lastObject;
+
+/// :nodoc:
+- (id)objectAtIndexedSubscript:(NSUInteger)index;
+
+/**
+ Returns an array containing the objects in the collection at the indexes specified by a given index set.
+ `nil` will be returned if the index set contains an index out of the collections bounds.
+
+ @param indexes The indexes in the collection to retrieve objects from.
+
+ @return The objects at the specified indexes.
+ */
+- (nullable NSArray *)objectsAtIndexes:(NSIndexSet *)indexes;
+
+/**
+ Returns the index of an object in the collection.
+
+ Returns `NSNotFound` if the object is not found in the collection.
+
+ @param object  An object (of the same type as returned from the `objectClassName` selector).
+ */
+- (NSUInteger)indexOfObject:(id)object;
+
+/**
+ Returns the index of the first object in the collection matching the predicate.
+
+ @param predicateFormat A predicate format string, optionally followed by a variable number of arguments.
+
+ @return    The index of the object, or `NSNotFound` if the object is not found in the collection.
+ */
+- (NSUInteger)indexOfObjectWhere:(NSString *)predicateFormat, ...;
+
+/// :nodoc:
+- (NSUInteger)indexOfObjectWhere:(NSString *)predicateFormat args:(va_list)args;
+
+/**
+ Returns the index of the first object in the collection matching the predicate.
+
+ @param predicate   The predicate with which to filter the objects.
+
+ @return    The index of the object, or `NSNotFound` if the object is not found in the collection.
+ */
+- (NSUInteger)indexOfObjectWithPredicate:(NSPredicate *)predicate;
 
 @required
 
@@ -74,55 +137,7 @@ typedef RLM_CLOSED_ENUM(int32_t, RLMPropertyType);
  */
 - (id)objectAtIndex:(NSUInteger)index;
 
-/**
- Returns the first object in the collection.
-
- Returns `nil` if called on an empty collection.
-
- @return An object of the type contained in the collection.
- */
-- (nullable id)firstObject;
-
-/**
- Returns the last object in the collection.
-
- Returns `nil` if called on an empty collection.
-
- @return An object of the type contained in the collection.
- */
-- (nullable id)lastObject;
-
 #pragma mark - Querying a Collection
-
-/**
- Returns the index of an object in the collection.
-
- Returns `NSNotFound` if the object is not found in the collection.
-
- @param object  An object (of the same type as returned from the `objectClassName` selector).
- */
-- (NSUInteger)indexOfObject:(id)object;
-
-/**
- Returns the index of the first object in the collection matching the predicate.
-
- @param predicateFormat A predicate format string, optionally followed by a variable number of arguments.
-
- @return    The index of the object, or `NSNotFound` if the object is not found in the collection.
- */
-- (NSUInteger)indexOfObjectWhere:(NSString *)predicateFormat, ...;
-
-/// :nodoc:
-- (NSUInteger)indexOfObjectWhere:(NSString *)predicateFormat args:(va_list)args;
-
-/**
- Returns the index of the first object in the collection matching the predicate.
-
- @param predicate   The predicate with which to filter the objects.
-
- @return    The index of the object, or `NSNotFound` if the object is not found in the collection.
- */
-- (NSUInteger)indexOfObjectWithPredicate:(NSPredicate *)predicate;
 
 /**
  Returns all objects matching the given predicate in the collection.
@@ -163,9 +178,6 @@ typedef RLM_CLOSED_ENUM(int32_t, RLMPropertyType);
  @return    An `RLMResults` sorted by the specified properties.
  */
 - (RLMResults *)sortedResultsUsingDescriptors:(NSArray<RLMSortDescriptor *> *)properties;
-
-/// :nodoc:
-- (id)objectAtIndexedSubscript:(NSUInteger)index;
 
 /**
  Returns an `NSArray` containing the results of invoking `valueForKey:` using `key` on each of the collection's objects.
@@ -308,6 +320,33 @@ typedef RLM_CLOSED_ENUM(int32_t, RLMPropertyType);
  @return    The average value of the given property, or `nil` if the Results are empty.
  */
 - (nullable NSNumber *)averageOfProperty:(NSString *)property;
+
+#pragma mark - Freeze
+
+/**
+ Indicates if the collection is frozen.
+
+ Frozen collections are immutable and can be accessed from any thread. The
+ objects read from a frozen collection will also be frozen.
+ */
+@property (nonatomic, readonly, getter=isFrozen) BOOL frozen;
+
+/**
+ Returns a frozen (immutable) snapshot of this collection.
+
+ The frozen copy is an immutable collection which contains the same data as
+ this collection currently contains, but will not update when writes are made
+ to the containing Realm. Unlike live collections, frozen collections can be
+ accessed from any thread.
+
+ @warning This method cannot be called during a write transaction, or when the containing Realm is read-only.
+ @warning Holding onto a frozen collection for an extended period while
+          performing write transaction on the Realm may result in the Realm
+          file growing to large sizes. See
+          `RLMRealmConfiguration.maximumNumberOfActiveVersions`
+          for more information.
+ */
+- (instancetype)freeze;
 
 @end
 
