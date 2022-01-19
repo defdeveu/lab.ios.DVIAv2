@@ -14,35 +14,35 @@
 
 
 import UIKit
-import RealmSwift
+//import RealmSwift
 
 class RealmViewController: UIViewController {
-
-    @IBOutlet var realmUserNameTextField: UITextField!
-    @IBOutlet var realmPasswordTextField: UITextField!
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        self.navigationItem.title = "Realm"
-
-        // Do any additional setup after loading the view.
-    }
-
-    @IBAction func saveInRealmTapped(_ sender: Any) {
-        if realmUserNameTextField.text?.isEmpty ?? true || realmPasswordTextField.text?.isEmpty ?? true {
-            DVIAUtilities.showAlert(title: "Error", message: "One or more input fields is empty.", viewController: self)
-            return
-        }
-        let realm: Realm = try! Realm()
-        let user = RealmUser()
-        user.name = realmUserNameTextField.text
-        user.password = realmPasswordTextField.text
-        do {
-            try! realm.write {
-                realm.add(user)
-                DVIAUtilities.showAlert(title: "", message: "Data saved in Realm Database", viewController: self)
-
-            }
-        }
-    }
+//
+//    @IBOutlet var realmUserNameTextField: UITextField!
+//    @IBOutlet var realmPasswordTextField: UITextField!
+//
+//    override func viewDidLoad() {
+//        super.viewDidLoad()
+//        self.navigationItem.title = "Realm"
+//
+//        // Do any additional setup after loading the view.
+//    }
+//
+//    @IBAction func saveInRealmTapped(_ sender: Any) {
+//        if realmUserNameTextField.text?.isEmpty ?? true || realmPasswordTextField.text?.isEmpty ?? true {
+//            DVIAUtilities.showAlert(title: "Error", message: "One or more input fields is empty.", viewController: self)
+//            return
+//        }
+//        let realm: Realm = try! Realm()
+//        let user = RealmUser()
+//        user.name = realmUserNameTextField.text
+//        user.password = realmPasswordTextField.text
+//        do {
+//            try! realm.write {
+//                realm.add(user)
+//                DVIAUtilities.showAlert(title: "", message: "Data saved in Realm Database", viewController: self)
+//
+//            }
+//        }
+//    }
 }

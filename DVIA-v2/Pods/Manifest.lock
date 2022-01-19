@@ -8,17 +8,11 @@ PODS:
     - Parse/Core (= 1.19.3)
   - Parse/Core (1.19.3):
     - Bolts/Tasks (= 1.9.1)
-  - Realm (10.21.1):
-    - Realm/Headers (= 10.21.1)
-  - Realm/Headers (10.21.1)
-  - RealmSwift (10.21.1):
-    - Realm (= 10.21.1)
 
 DEPENDENCIES:
   - couchbase-lite-ios
   - GoogleAnalytics
   - Parse
-  - RealmSwift
 
 SPEC REPOS:
   trunk:
@@ -26,17 +20,13 @@ SPEC REPOS:
     - couchbase-lite-ios
     - GoogleAnalytics
     - Parse
-    - Realm
-    - RealmSwift
 
 SPEC CHECKSUMS:
   Bolts: 8c1e8aab2f603387b8b9924f57d1d64f43d3ffdc
   couchbase-lite-ios: 6b586fca2c8a59c85e31df89a2528c92c40fc4dc
   GoogleAnalytics: 01e4c5a04544a3608f93e970ce0817836897c5a5
   Parse: 0abb63a0ff6fa34a3f64b81d595a294e2ece143a
-  Realm: 44b41c3ae39e3ecfded71a04434bfde066c7b317
-  RealmSwift: dbf9a4eb06e0c929d51c4ef2e8f951bca541feab
 
-PODFILE CHECKSUM: 84a14fcfee82468365b734629505d4022471f73f
+PODFILE CHECKSUM: 9de1fe170aae9cf220eb3181b58ea67c7efed4b4
 
-COCOAPODS: 1.10.2
+COCOAPODS: 1.9.3

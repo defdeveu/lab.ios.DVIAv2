@@ -14,10 +14,10 @@
 
 
 import Foundation
-import RealmSwift
+//import RealmSwift
 
-class RealmUser: Object {
-    var name: String?
-    var password: String?
-    
-}
+//class RealmUser: Object {
+//    var name: String?
+//    var password: String?
+//    
+//}
