@@ -13,6 +13,7 @@
 #include <realm/util/functional.hpp>
 #include <realm/util/logger.hpp>
 #include <realm/sync/client_base.hpp>
+#include <realm/sync/subscriptions.hpp>
 
 namespace realm::sync {
 
@@ -318,7 +319,7 @@ public:
     /// Note that the session is not fully activated until you call bind().
     /// Also note that if you call set_sync_transact_callback(), it must be
     /// done before calling bind().
-    Session(Client&, std::shared_ptr<DB>, Config&& = {});
+    Session(Client&, std::shared_ptr<DB>, std::shared_ptr<SubscriptionStore>, Config&& = {});
 
     /// This leaves the right-hand side session object detached. See "Thread
     /// safety" section under detach().
@@ -706,6 +707,8 @@ public:
     /// This function is fully thread-safe. That is, it may be called by any
     /// thread, and by multiple threads concurrently.
     void cancel_reconnect_delay();
+
+    void on_new_flx_sync_subscription(int64_t new_version);
 
 private:
     SessionWrapper* m_impl = nullptr;

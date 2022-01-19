@@ -22,8 +22,10 @@
 #include <realm/object-store/feature_checks.hpp>
 #include <realm/object-store/sync/generic_network_transport.hpp>
 #include <realm/sync/config.hpp>
+#include <realm/sync/subscriptions.hpp>
 
 #include <realm/util/optional.hpp>
+#include <realm/object-store/util/checked_mutex.hpp>
 #include <realm/version_id.hpp>
 
 #include <mutex>
@@ -218,12 +220,15 @@ public:
         return m_server_url;
     }
 
+    bool has_flx_subscription_store() const;
+    sync::SubscriptionStore* get_flx_subscription_store();
+
     // Create an external reference to this session. The sync session attempts to remain active
     // as long as an external reference to the session exists.
-    std::shared_ptr<SyncSession> external_reference();
+    std::shared_ptr<SyncSession> external_reference() REQUIRES(!m_external_reference_mutex);
 
     // Return an existing external reference to this session, if one exists. Otherwise, returns `nullptr`.
-    std::shared_ptr<SyncSession> existing_external_reference();
+    std::shared_ptr<SyncSession> existing_external_reference() REQUIRES(!m_external_reference_mutex);
 
     // Expose some internal functionality to other parts of the ObjectStore
     // without making it public to everyone
@@ -299,6 +304,7 @@ private:
     // }
 
     std::shared_ptr<SyncManager> sync_manager() const;
+    std::shared_ptr<sync::SubscriptionStore> make_flx_subscription_store();
 
     static std::function<void(util::Optional<app::AppError>)> handle_refresh(std::shared_ptr<SyncSession>);
 
@@ -313,13 +319,14 @@ private:
     void update_error_and_mark_file_for_deletion(SyncError&, ShouldBackup);
     std::string get_recovery_file_path();
     void handle_progress_update(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t);
+    void handle_new_flx_sync_query(int64_t version);
 
     void set_sync_transact_callback(std::function<TransactionCallback>);
     void nonsync_transact_notify(VersionID::version_type);
 
     void create_sync_session();
     void do_create_sync_session();
-    void did_drop_external_reference();
+    void did_drop_external_reference() REQUIRES(!m_external_reference_mutex);
     void detach_from_sync_manager();
     void close(std::unique_lock<std::mutex>&);
 
@@ -346,6 +353,7 @@ private:
 
     SyncConfig m_config;
     std::shared_ptr<DB> m_db;
+    std::shared_ptr<sync::SubscriptionStore> m_flx_subscription_store;
     bool m_force_client_reset = false;
     DBRef m_client_reset_fresh_copy;
     _impl::SyncClient& m_client;
@@ -367,8 +375,9 @@ private:
     _impl::SyncProgressNotifier m_progress_notifier;
     ConnectionChangeNotifier m_connection_change_notifier;
 
+    mutable util::CheckedMutex m_external_reference_mutex;
     class ExternalReference;
-    std::weak_ptr<ExternalReference> m_external_reference;
+    std::weak_ptr<ExternalReference> m_external_reference GUARDED_BY(m_external_reference_mutex);
 };
 
 } // namespace realm

@@ -9,11 +9,11 @@ PODS:
     - Parse/Core (= 1.19.3)
   - Parse/Core (1.19.3):
     - Bolts/Tasks (= 1.9.1)
-  - Realm (10.20.1):
-    - Realm/Headers (= 10.20.1)
-  - Realm/Headers (10.20.1)
-  - RealmSwift (10.20.1):
-    - Realm (= 10.20.1)
+  - Realm (10.21.1):
+    - Realm/Headers (= 10.21.1)
+  - Realm/Headers (10.21.1)
+  - RealmSwift (10.21.1):
+    - Realm (= 10.21.1)
 
 DEPENDENCIES:
   - couchbase-lite-ios
@@ -38,9 +38,9 @@ SPEC CHECKSUMS:
   Flurry-iOS-SDK: a1dbf099040d71e89a11cdf3a30c8723c1de950f
   GoogleAnalytics: 01e4c5a04544a3608f93e970ce0817836897c5a5
   Parse: 0abb63a0ff6fa34a3f64b81d595a294e2ece143a
-  Realm: fac5ecd031fcb81171627b74944c885662d4b266
-  RealmSwift: 9b02d25acb46a14756bde9893abb99e2e3675923
+  Realm: 44b41c3ae39e3ecfded71a04434bfde066c7b317
+  RealmSwift: dbf9a4eb06e0c929d51c4ef2e8f951bca541feab
 
-PODFILE CHECKSUM: b60974117d0c7906e3b0e527da28a6bce45d1f02
+PODFILE CHECKSUM: ee7e217391f60f7edd65386a946aa7007124a96d
 
 COCOAPODS: 1.10.2

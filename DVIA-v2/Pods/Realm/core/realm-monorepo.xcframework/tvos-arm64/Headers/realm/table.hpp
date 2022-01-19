@@ -263,7 +263,7 @@ public:
     /// Create a number of objects with keys supplied
     void create_objects(const std::vector<ObjKey>& keys);
     /// Does the key refer to an object within the table?
-    bool is_valid(ObjKey key) const
+    bool is_valid(ObjKey key) const noexcept
     {
         return m_clusters.is_valid(key);
     }
@@ -272,6 +272,10 @@ public:
     {
         REALM_ASSERT(!key.is_unresolved());
         return m_clusters.get(key);
+    }
+    Obj try_get_object(ObjKey key) const noexcept
+    {
+        return m_clusters.try_get_obj(key);
     }
     Obj get_object(size_t ndx) const
     {
@@ -769,9 +773,6 @@ private:
 
     uint64_t get_sync_file_id() const noexcept;
 
-    static size_t get_size_from_ref(ref_type top_ref, Allocator&) noexcept;
-    static size_t get_size_from_ref(ref_type spec_ref, ref_type columns_ref, Allocator&) noexcept;
-
     /// Create an empty table with independent spec and return just
     /// the reference to the underlying memory.
     static ref_type create_empty_table(Allocator&, TableKey = TableKey());
@@ -1267,22 +1268,9 @@ inline bool Table::is_group_level() const noexcept
     return bool(get_parent_group());
 }
 
-inline bool Table::operator==(const Table& t) const
-{
-    return m_spec == t.m_spec && compare_objects(t); // Throws
-}
-
 inline bool Table::operator!=(const Table& t) const
 {
     return !(*this == t); // Throws
-}
-
-inline size_t Table::get_size_from_ref(ref_type top_ref, Allocator& alloc) noexcept
-{
-    const char* top_header = alloc.translate(top_ref);
-    std::pair<int_least64_t, int_least64_t> p = Array::get_two(top_header, 0);
-    ref_type spec_ref = to_ref(p.first), columns_ref = to_ref(p.second);
-    return get_size_from_ref(spec_ref, columns_ref, alloc);
 }
 
 inline bool Table::is_link_type(ColumnType col_type) noexcept

@@ -76,7 +76,7 @@ typedef bool (*realm_should_compact_on_launch_func_t)(void* userdata, uint64_t t
 typedef enum realm_schema_mode {
     RLM_SCHEMA_MODE_AUTOMATIC,
     RLM_SCHEMA_MODE_IMMUTABLE,
-    RLM_SCHEMA_MODE_READ_ONLY_ALTERNATIVE,
+    RLM_SCHEMA_MODE_READ_ONLY,
     RLM_SCHEMA_MODE_RESET_FILE,
     RLM_SCHEMA_MODE_ADDITIVE_DISCOVERED,
     RLM_SCHEMA_MODE_ADDITIVE_EXPLICIT,
@@ -413,16 +413,6 @@ RLM_API void realm_get_async_error(const realm_async_error_t* err, realm_error_t
 RLM_API realm_async_error_t* realm_get_last_error_as_async_error(void);
 
 #if defined(__cplusplus)
-/**
- * Rethrow the last exception.
- *
- * Note: This function does not have C linkage, because throwing across language
- * boundaries is undefined behavior. When called from C code, this should result
- * in a linker error. When called from C++, `std::rethrow_exception` will be
- * called to propagate the exception unchanged.
- */
-RLM_EXPORT void realm_rethrow_last_error(void);
-
 /**
  * Invoke a function that may throw an exception, and report that exception as
  * part of the C API error handling mechanism.
@@ -1735,6 +1725,25 @@ realm_dictionary_add_notification_callback(realm_object_t*, void* userdata, real
 RLM_API realm_query_t* realm_query_parse(const realm_t*, realm_class_key_t target_table, const char* query_string,
                                          size_t num_args, const realm_value_t* args);
 
+
+/**
+ * Parse a query string and append it to an existing query via logical &&.
+ * The query string applies to the same table and Realm as the existing query.
+ *
+ * If the query failed to parse, the parser error is available from
+ * `realm_get_last_error()`.
+ *
+ * @param query_string A zero-terminated string in the Realm Query Language,
+ *                     optionally containing argument placeholders (`$0`, `$1`,
+ *                     etc.).
+ * @param num_args The number of arguments for this query.
+ * @param args A pointer to a list of argument values.
+ * @return A non-null pointer if the query was successfully parsed and no
+ *         exception occurred.
+ */
+RLM_API realm_query_t* realm_query_append_query(const realm_query_t*, const char* query_string, size_t num_args,
+                                                const realm_value_t* args);
+
 /**
  * Parse a query string and bind it to a list.
  *
@@ -2479,7 +2488,7 @@ typedef enum realm_sync_client_reconnect_mode {
 
 typedef enum realm_sync_session_resync_mode {
     RLM_SYNC_SESSION_RESYNC_MODE_MANUAL,
-    RLM_SYNC_SESSION_RESYNC_MODE_SEAMLESS_LOSS,
+    RLM_SYNC_SESSION_RESYNC_MODE_DISCARD_LOCAL,
 } realm_sync_session_resync_mode_e;
 
 typedef enum realm_sync_session_stop_policy {
@@ -2572,7 +2581,8 @@ typedef enum realm_sync_errno_connection {
     RLM_SYNC_ERR_CONNECTION_BAD_DECOMPRESSION = 110,
     RLM_SYNC_ERR_CONNECTION_BAD_CHANGESET_HEADER_SYNTAX = 111,
     RLM_SYNC_ERR_CONNECTION_BAD_CHANGESET_SIZE = 112,
-    RLM_SYNC_ERR_CONNECTION_BAD_CHANGESETS = 113,
+    RLM_SYNC_ERR_CONNECTION_SWITCH_TO_FLX_SYNC = 113,
+    RLM_SYNC_ERR_CONNECTION_SWITCH_TO_PBS = 114,
 } realm_sync_errno_connection_e;
 
 typedef enum realm_sync_errno_session {
