@@ -13,7 +13,7 @@
  
 
 import UIKit
-import Flurry_iOS_SDK
+//import Flurry_iOS_SDK
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
@@ -43,10 +43,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
 
         //Flurry Analytics code for Thirty Party Data Leakage section
-        Flurry.startSession("8RM5WHP628853HQXFKDX", with: FlurrySessionBuilder
+        /*Flurry.startSession("8RM5WHP628853HQXFKDX", with: FlurrySessionBuilder
             .init()
             .withCrashReporting(true)
-            .withLogLevel(FlurryLogLevel.all))
+            .withLogLevel(FlurryLogLevel.all))*/
         
         return true
     }

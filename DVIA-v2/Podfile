@@ -5,7 +5,7 @@ target 'DVIA-v2' do
     pod 'GoogleAnalytics'
     pod 'RealmSwift'
     pod 'couchbase-lite-ios'
-    pod 'Flurry-iOS-SDK/FlurrySDK'
+#    pod 'Flurry-iOS-SDK/FlurrySDK'
 end
 
 post_install do |installer|

@@ -3,7 +3,6 @@ PODS:
   - couchbase-lite-ios (1.4.4):
     - couchbase-lite-ios/SQLite (= 1.4.4)
   - couchbase-lite-ios/SQLite (1.4.4)
-  - Flurry-iOS-SDK/FlurrySDK (11.4.0)
   - GoogleAnalytics (3.20.0)
   - Parse (1.19.3):
     - Parse/Core (= 1.19.3)
@@ -17,7 +16,6 @@ PODS:
 
 DEPENDENCIES:
   - couchbase-lite-ios
-  - Flurry-iOS-SDK/FlurrySDK
   - GoogleAnalytics
   - Parse
   - RealmSwift
@@ -26,7 +24,6 @@ SPEC REPOS:
   trunk:
     - Bolts
     - couchbase-lite-ios
-    - Flurry-iOS-SDK
     - GoogleAnalytics
     - Parse
     - Realm
@@ -35,12 +32,11 @@ SPEC REPOS:
 SPEC CHECKSUMS:
   Bolts: 8c1e8aab2f603387b8b9924f57d1d64f43d3ffdc
   couchbase-lite-ios: 6b586fca2c8a59c85e31df89a2528c92c40fc4dc
-  Flurry-iOS-SDK: a1dbf099040d71e89a11cdf3a30c8723c1de950f
   GoogleAnalytics: 01e4c5a04544a3608f93e970ce0817836897c5a5
   Parse: 0abb63a0ff6fa34a3f64b81d595a294e2ece143a
   Realm: 44b41c3ae39e3ecfded71a04434bfde066c7b317
   RealmSwift: dbf9a4eb06e0c929d51c4ef2e8f951bca541feab
 
-PODFILE CHECKSUM: 6b9dd8613e74b279a7be2fabc571571bea221ab0
+PODFILE CHECKSUM: 84a14fcfee82468365b734629505d4022471f73f
 
 COCOAPODS: 1.10.2

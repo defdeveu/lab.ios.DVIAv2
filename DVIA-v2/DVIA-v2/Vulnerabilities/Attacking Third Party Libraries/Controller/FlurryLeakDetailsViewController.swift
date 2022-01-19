@@ -12,7 +12,7 @@
 //  And this https://www.youtube.com/watch?v=6dHXcoF590E
 
 import UIKit
-import Flurry_iOS_SDK
+//import Flurry_iOS_SDK
 
 
 class FlurryLeakDetailsViewController: UIViewController, UITextFieldDelegate {
@@ -39,7 +39,7 @@ class FlurryLeakDetailsViewController: UIViewController, UITextFieldDelegate {
             "phone": textField.text,
             "uuid" : strippeduuid
             ] as [String : Any]
-        Flurry.logEvent("PhoneEntered", withParameters:params as Any as! [AnyHashable : Any])
+        /*Flurry.logEvent("PhoneEntered", withParameters:params as Any as! [AnyHashable : Any])*/
         
         let queryItem = URLQueryItem(name: "q", value: "\(textField.text!)")
         let url = URL(string: "http://google.com?\(queryItem)")
